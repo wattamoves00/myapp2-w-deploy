@@ -13,20 +13,34 @@ export class MyApp {
 
   constructor(platform: Platform, public deploy: Deploy) {
     platform.ready().then(() => {
-      this.deploy.channel = 'dev';
+      
+
+      if ( platform.is('cordova') ) this.updateApp();
+
       // Okay, so the platform is ready and our plugins are available.
       // Here you can do any higher level native things you might need.
       StatusBar.styleDefault();
-      this.deploy.check().then((snapshotAvailable: boolean) => {
-          if (snapshotAvailable) {
-            this.deploy.download().then(() => {
-              return this.deploy.extract();
-            }).then(() => {
-              this.deploy.load();
-            });
-          }
-        });
       Splashscreen.hide();
+
+
     });
+  }
+  
+  updateApp() {
+    this.updateSnapshot();
+    setInterval( () => this.updateSnapshot(), 30 * 1000 );
+  }
+  updateSnapshot() {
+    console.log("MyApp::updateSnapshot()");
+      this.deploy.check().then( (snapshotAvailable: boolean) => {
+        if ( snapshotAvailable ) { 
+          this.deploy.download().then( () => { 
+            return this.deploy.extract() 
+              .then( () => { 
+                this.deploy.load();
+              } );
+          });
+        }
+      });
   }
 }
